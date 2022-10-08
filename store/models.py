@@ -1,45 +1,22 @@
 import uuid
-
-from django import forms
-from django.core import exceptions
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from pyuploadcare.dj.models import ImageGroupField
-# from cloudinary.models import CloudinaryField
-from django.utils.translation import gettext_lazy as _
 
 
 # Create your models here
-# class PercentageField(models.CharField):
-#     empty_values = True
-#     description = _('Returns percentage format for string')
-#
-#     def __init__(self, *args, **kwargs):
-#         max_length = 200
-#         super(PercentageField, self).__init__(max_length, *args, **kwargs)
-#
-#     def to_python(self, value):
-#         if value is None:
-#             return value
-#         else:
-#             try:
-#                 return str(float(value) / 100) + '%'
-#             except (ValueError, TypeError):
-#                 raise exceptions.ValidationError(
-#                     self.error_messages['invalid'],
-#                     code='invalid',
-#                     params={'value': value}
-#                 )
-
-
 class Product(models.Model):
     LABEL_TYPES = [
-        ('N', 'NEW'),
-        ('S', 'SALE')
+        ('NEW', 'N'),
+        ('SALE', 'S')
     ]
 
     name = models.CharField(max_length=200)
-    image = ImageGroupField(blank=True)
+    try:
+        from pyuploadcare.dj.models import ImageGroupField
+        image = ImageGroupField(blank=True)
+    except ImportError:
+        from cloudinary.models import CloudinaryField
+        image = CloudinaryField(blank=True)
     available = models.IntegerField(default=1)
     price = models.FloatField()
     label = models.CharField(max_length=10, choices=LABEL_TYPES, default='SALE')

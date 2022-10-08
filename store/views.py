@@ -28,13 +28,12 @@ def api_user(request):
     user = request.user
     if user.is_authenticated:
         if request.method == 'POST':
-            print(request.data)
             product = Product.objects.get(id=request.data['id'])
             if product not in user.wish_list.all():
                 user.wish_list.add(product)
             else:
                 user.wish_list.remove(product)
-        return Response(UserSerializer(user).data)
+    return Response(UserSerializer(user).data)
 
 
 @api_view(['POST'])
@@ -46,6 +45,8 @@ def api_cart(request):
     if updated in cart.items.filter(item=updated.item):
         cart.items.remove(updated)
         updated.delete()
-        return Response({'count': cart.quantity_total()})
-    cart.items.add(updated)
-    return Response({'count': cart.quantity_total()})
+        update = 'removed'
+    else:
+        cart.items.add(updated)
+        update = 'added'
+    return Response({'count': cart.quantity_total(), 'update':update})

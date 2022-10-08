@@ -39,8 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'pyuploadcare.dj',
-    'store.apps.StoreConfig'
+    'store.apps.StoreConfig',
 ]
 
 MIDDLEWARE = [
