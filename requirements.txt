@@ -1,0 +1,4 @@
+Django==3.2.8
+django-rest-framework==0.1.0
+pyuploadcare==3.0.0
+pydantic==1.9.0
