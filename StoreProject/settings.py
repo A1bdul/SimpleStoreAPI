@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'store.apps.StoreConfig',
+    'pyuploadcare',
 ]
 
 MIDDLEWARE = [
@@ -133,6 +134,6 @@ AUTH_USER_MODEL = 'store.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 UPLOADCARE = {
-    'pub_key': os.getenv('pub_key'),
-    'secret': os.getenv('secret'),
+    'pub_key': str(os.getenv('pub_key')),
+    'secret': str(os.getenv('secret')),
 }

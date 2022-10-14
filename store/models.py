@@ -11,12 +11,8 @@ class Product(models.Model):
     ]
 
     name = models.CharField(max_length=200)
-    try:
-        from pyuploadcare.dj.models import ImageGroupField
-        image = ImageGroupField(blank=True)
-    except ImportError:
-        from cloudinary.models import CloudinaryField
-        image = CloudinaryField(blank=True)
+    from pyuploadcare.dj.models import ImageGroupField
+    image = ImageGroupField(blank=True)
     available = models.IntegerField(default=1)
     price = models.FloatField()
     label = models.CharField(max_length=10, choices=LABEL_TYPES, default='SALE')
@@ -48,7 +44,7 @@ class User(AbstractUser):
 class Cart(models.Model):
     transaction_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4)
     consumer = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    items = models.ManyToManyField(OrderedItem)
+    items = models.ManyToManyField(OrderedItem, blank=True, null=True)
     completed = models.BooleanField(default=False)
     date_ordered = models.DateTimeField(auto_now_add=True)
 

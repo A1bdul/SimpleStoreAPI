@@ -3045,14 +3045,14 @@ li.login-attri .account-drop a {
 }
 /*------------- Slick Slider Arrow -----------------*/
 .slick-next:before, .slick-prev:before {
-    font-family:'themify';
+    font-family:'boxicons';
     font-size: 14px;
 }
 .slick-prev::before {
-    content:"\e629";
+    content:"\ea94";
 }
 .slick-next::before {
-    content:"\e628";
+    content:"\eb42";
 }
 .home-slider .slick-next {
     right: 40px;
@@ -4637,7 +4637,7 @@ footer.light-footer {
     background: #f4f5f7;
 }
 footer.dark-footer{
-	background:#252525;
+	background:#bfc1c5;
 }
 footer.blue-footer {
     background: #bfc1c5;
@@ -4708,7 +4708,7 @@ footer.skin-dark-footer .extream, footer.skin-light-footer .extream {
 	line-height:1.4;
 }
 footer.skin-dark-footer h4, footer.skin-blue-footer h4{
-    color: #ffffff;
+    color: #362b2b;
 }
 footer.skin-dark-footer .footer_widget ul li a, footer.skin-dark-footer, footer.skin-dark-footer a {
     color:#a7a7a7;

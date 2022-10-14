@@ -1,14 +1,139 @@
+// Product API function
+let is_user = getToken('user-cart'),
+    cookie_cart = {
+        item: [],
+        cart_total: 0,
+        quantity_total: 0
+    };
+if (is_user) {
+    cookie_cart =
+        getToken('cookie-cart') ? JSON.parse(getToken('cookie-cart')) : cookie_cart
+}
+fetch('/api/user', {
+    method: 'GET',
+})
+    .then(r => r.json())
+    .then(data => {
+        console.log(data)
+        const carts = data['cart'].quantity_total,
+            wish_count = data['wish_list'][0];
+
+        document.querySelectorAll('.wish_counter').forEach(wishes => wishes.innerHTML = wish_count);
+        document.querySelectorAll('.cart-counter').forEach(cart => cart.innerHTML = carts)
+        if (!is_user) {
+            for (const i in data['wish_list'][1]) {
+                if (data['wish_list'].hasOwnProperty(i)) {
+                    let favourites = document.getElementById(`wish-${data['wish_list'][1][i]}`)
+                    if (favourites) {
+                        favourites.setAttribute('liked', 'true')
+                        favourites.childNodes.forEach(likes => likes.remove())
+                        favourites.insertAdjacentHTML('beforeend', '<i class="bx bxs-heart"></i>')
+                    }
+                }
+            }
+        }
+    })
+    .catch(error => {
+        document.querySelectorAll('.wish_or_remove').forEach(wishes => wishes.remove());
+        document.cookie = 'cookie-cart=' + JSON.stringify(cookie_cart) + ';path=/;SameSite=Lax;';
+        document.querySelectorAll('.cart-counter').forEach(cart => cart.innerHTML = cookie_cart['quantity_total']);
+    })
+
+let product_list = document.getElementById('products')
+if (product_list) {
+    fetch('/api/product', {
+        method: 'GET'
+    }).then(r => r.json())
+        .then(data => {
+            console.log(data)
+            let l;
+            for (const products in data) {
+                let product = data[products]
+                if (data.hasOwnProperty(products)) {
+                    l = `<div class="col-xl-3 col-lg-4 col-md-6 col-6"><div class="product_grid card b-0">`
+                    l += '<div class="badge bg-info text-white position-absolute ft-regular ab-left text-upper">' + product.label + '</div>' + '<div class="card-body p-0"><div class="shop_thumb position-relative">';
+                    l += '<a class="card-img-top d-block overflow-hidden" href="/product/' + product.id + '"><img class="card-img-top" src="/assets/img/product/1.jpg" alt="..."></a>' + '<div class="product-hover-overlay d-flex align-items-center justify-content-between">' + '<div class="edlio"><a href="javascript:void(0);" class="text-underline fs-sm ft-bold snackbar-addcart" id="cart-' + product.id + '"><i class="bx bx-cart" style="font-size: 1.5rem"></i></a></div>' + '<div class="edlio d-flex align-items-center">'
+                    l += is_user !== null ? '' : '<button class="btn auto btn_love mr-2 snackbar-wishlist" id="wish-' + product.id + '"><i class="bx bx-heart"></i></button>';
+                    l += '<a href="#" class="text-underline" id="modal-' + product.id + '" data-toggle="modal" data-target="#quickview"><i class="bx bx-expand"></i></a>' + '</div>' + '</div>' + '</div>' + '</div>' + '<div class="card-footer b-0 p-0 pt-2 bg-white d-flex align-items-start justify-content-between">' + '<div class="text-left">' + '<div class="text-left">' + '<div class="star-rating align-items-center d-flex justify-content-left mb-1 p-0">' + '<i class="bx bxs-star filled"></i>' + '<i class="bx bxs-star filled"></i>' + '<i class="bx bxs-star filled"></i><i class="bx bxs-star filled"></i><i class="bx bx-star"></i>' + '<span class="small">(5 Reviews)</span>' + '</div><h5 class="fs-md mb-0 lh-1 mb-1"><a href="shop-single-v1.html">' + product.name + '</a></h5>' + '<div class="elis_rty"><span class="ft-bold text-dark fs-sm">$' + product.price + '</span></div>' + '</div></div></div></div></div>'
+                }
+                product_list.insertAdjacentHTML('beforeend', l)
+                document.getElementById(`modal-${product.id}`).addEventListener('click', () => {
+                    for (let img in product.image){
+                        console.log(img)
+                        document.getElementById(`slide-${img}`).src = product.image[img]
+                    }
+                });
+                document.getElementById(`cart-${product.id}`).addEventListener('click', () => {
+                    let produce;
+                    if (!is_user) {
+                        fetch('/api/cart', {
+                            method: 'POST', headers: {
+                                'X-CSRFToken': getToken("csrftoken"),
+                                "Accept": "application/json",
+                                'Content-Type': 'application/json'
+                            }, body: JSON.stringify({
+                                'id': product.id
+                            })
+                        })
+                            .then(res => res.json())
+                            .then(carts => {
+                                document.querySelectorAll('.cart-counter').forEach(counter => counter.innerHTML = carts['count'])
+                                cart_snackbar(carts['update'], product.name)
+                            })
+                    } else {
+                        for (let x in cookie_cart.item) {
+                            if (produce !== true) {
+                                produce = cookie_cart.item[x]['item'].id === product.id
+                            }
+                        }
+                        if (produce) {
+                            cookie_cart.item.splice(cookie_cart.item.indexOf(product.name), 1)
+                            cart_snackbar('removed', product.name)
+                            cookie_cart.quantity_total = cookie_cart.item.length
+                        } else {
+                            cookie_cart.item.push({'item': product, 'quantity': 1})
+                            cart_snackbar('added', product.name)
+                            cookie_cart.quantity_total = cookie_cart.item.length
+                        }
+                        document.cookie = 'cookie-cart=' + JSON.stringify(cookie_cart) + ';path=/;SameSite=Lax;';
+                        document.querySelectorAll('.cart-counter').forEach(counter => counter.innerHTML = cookie_cart.quantity_total)
+                    }
+
+                })
+                let favourite = document.getElementById(`wish-${product.id}`);
+                favourite && favourite.addEventListener('click', () => {
+                    fetch('/api/user', {
+                        method: 'POST', headers: {
+                            'X-CSRFToken': getToken("csrftoken"),
+                            "Accept": 'application/json',
+                            "Content-Type": 'application/json',
+                        }, body: JSON.stringify({
+                            id: product.id
+                        })
+                    }).then(r => r.json())
+                        .then(data => {
+                            let wish_count = data['wish_list'][0],
+                                liked = favourite.getAttribute('liked');
+                            document.querySelectorAll('.wish_counter').forEach(wishes => wishes.innerHTML = wish_count);
+                            if (liked) {
+                                favourite.removeAttribute('liked')
+                                favourite.childNodes.forEach(likes => likes.remove())
+                                favourite.insertAdjacentHTML('beforeend', '<i class="bx bx-heart"></i>')
+                                wish_snackbar('removed', product.name)
+                            } else {
+                                favourite.setAttribute('liked', 'true')
+                                favourite.childNodes.forEach(likes => likes.remove())
+                                favourite.insertAdjacentHTML('beforeend', '<i class="bx bxs-heart"></i>')
+                                wish_snackbar('added', product.name)
+                            }
+                        })
+                })
+            }
+        })
+}
+
 $(function () {
     "use strict";
-    //Loader
-    $(function preloaderLoad() {
-        if ($('.preloader').length) {
-            $('.preloader').delay(200).fadeOut(300);
-        }
-        $(".preloader_disabler").on('click', function () {
-            $("#preloader").hide();
-        });
-    });
 
     // Script Navigation
     !function (n, e, i, a) {
@@ -154,118 +279,7 @@ $(function () {
 
     // Tooltip
     $('[data-toggle="tooltip"]').tooltip();
-    !(function () {
-        let is_user,j,
-            user_cart = getToken('user_cart') ? JSON.parse(getToken('user_cart')) : {products: []};
-        fetch('api/user', {
-            method: 'GET',
-        })
-            .then(r => r.json())
-            .then(data => {
-                const carts = data['cart'].quantity_total,
-                    wish_count = data['wish_list'][0];
-                j = data['wish_list']
-                document.querySelectorAll('.wish_counter').forEach(wishes => wishes.innerHTML = wish_count);
-                document.querySelectorAll('.cart-counter').forEach(cart => cart.innerHTML = carts)
-                is_user = true;
-            })
-            .catch(error => {
-                document.querySelectorAll('.wish_or_remove').forEach(wishes => wishes.remove());
-                document.querySelectorAll('.cart-counter').forEach(cart => cart.innerHTML = user_cart.products.length);
-                is_user = false;
-            })
-        fetch('api/product', {
-            method: 'GET'
-        }).then(r => r.json())
-            .then(data => {
-                let l;
-                for (const products in data) {
-                    let product = data[products]
-                    if (data.hasOwnProperty(products)) {
-                        l = `<div class="col-xl-3 col-lg-4 col-md-6 col-6"><div class="product_grid card b-0">`
-                        l += '<div class="badge bg-info text-white position-absolute ft-regular ab-left text-upper">' + product.label + '</div>' + '<div class="card-body p-0"><div class="shop_thumb position-relative">';
-                        l += '<a class="card-img-top d-block overflow-hidden" href="shop-single-v1.html"><img class="card-img-top" src="/assets/img/product/1.jpg" alt="..."></a>' + '<div class="product-hover-overlay d-flex align-items-center justify-content-between">' + '<div class="edlio"><a href="javascript:void(0);" class="text-underline fs-sm ft-bold snackbar-addcart" id="cart-' + product.id + '"><i class="bx bx-cart" style="font-size: 1.5rem"></i></a></div>' + '<div class="edlio d-flex align-items-center">'
-                        l += is_user ? '<button class="btn auto btn_love mr-2 snackbar-wishlist" id="wish-' + product.id + '"><i class="bx bx-heart"></i></button>' : '';
-                        l += '<a href="#" class="text-underline" id="modal-' + product.id + '" data-toggle="modal" data-target="#quickview"><i class="bx bx-expand"></i></a>' + '</div>' + '</div>' + '</div>' + '</div>' + '<div class="card-footer b-0 p-0 pt-2 bg-white d-flex align-items-start justify-content-between">' + '<div class="text-left">' + '<div class="text-left">' + '<div class="star-rating align-items-center d-flex justify-content-left mb-1 p-0">' + '<i class="bx bxs-star filled"></i>' + '<i class="bx bxs-star filled"></i>' + '<i class="bx bxs-star filled"></i><i class="bx bxs-star filled"></i><i class="bx bx-star"></i>' + '<span class="small">(5 Reviews)</span>' + '</div><h5 class="fs-md mb-0 lh-1 mb-1"><a href="shop-single-v1.html">' + product.name + '</a></h5>' + '<div class="elis_rty"><span class="ft-bold text-dark fs-sm">$' + product.price + '</span></div>' + '</div></div></div></div></div>'
-                    }
-                    document.getElementById('products').insertAdjacentHTML('beforeend', l)
-                    document.getElementById(`modal-${product.id}`).addEventListener('click', () => {
-                        for (let image in product.images) {
-                            document.querySelector('.quick_view_slide').insertAdjacentHTML('beforeend', `<div class="single_view_slide"><img src="/assets/img/product/1.jpg" class="img-fluid" alt="" /></div>`)
-                        }
-                    });
-                    document.getElementById(`cart-${product.id}`).addEventListener('click', () => {
-                        if (is_user) {
-                            fetch('/api/cart', {
-                                method: 'POST', headers: {
-                                    'X-CSRFToken': getToken("csrftoken"),
-                                    "Accept": "application/json",
-                                    'Content-Type': 'application/json'
-                                }, body: JSON.stringify({
-                                    'id': product.id
-                                })
-                            })
-                                .then(res => res.json())
-                                .then(carts => {
-                                    document.querySelectorAll('.cart-counter').forEach(counter => counter.innerHTML = carts['count'])
-                                    cart_snackbar(carts['update'], product.name)
-                                })
-                        } else {
-                            if (user_cart.products.includes(product.name)) {
-                                user_cart.products.splice(user_cart.products.indexOf(product.name), 1)
-                                cart_snackbar('removed', product.name)
-                            } else {
-                                user_cart.products.push(product.name)
-                                cart_snackbar('added', product.name)
-                            }
-                            document.cookie = 'user_cart=' + JSON.stringify(user_cart);
-                            document.querySelectorAll('.cart-counter').forEach(counter => counter.innerHTML = user_cart.products.length)
-                        }
 
-                    })
-                    let favourite = document.getElementById(`wish-${product.id}`);
-                    favourite && favourite.addEventListener('click', () => {
-                        fetch('api/user', {
-                            method: 'POST', headers: {
-                                'X-CSRFToken': getToken("csrftoken"),
-                                "Accept": 'application/json',
-                                "Content-Type": 'application/json',
-                            }, body: JSON.stringify({
-                                id: product.id
-                            })
-                        }).then(r => r.json())
-                            .then(data => {
-                                let wish_count = data['wish_list'][0],
-                                    liked = favourite.getAttribute('liked');
-                                document.querySelectorAll('.wish_counter').forEach(wishes => wishes.innerHTML = wish_count);
-                                if (liked) {
-                                    favourite.removeAttribute('liked')
-                                    favourite.childNodes.forEach(likes => likes.remove())
-                                    favourite.insertAdjacentHTML('beforeend', '<i class="bx bx-heart"></i>')
-                                    wish_snackbar('removed', product.name)
-                                } else {
-                                    favourite.setAttribute('liked', 'true')
-                                    favourite.childNodes.forEach(likes => likes.remove())
-                                    favourite.insertAdjacentHTML('beforeend', '<i class="bx bxs-heart"></i>')
-                                    wish_snackbar('added', product.name)
-                                }
-                            })
-                    })
-                }
-            })
-        if (is_user){
-                for (const i in j['wish_list'][1]) {
-                    if (j['wish_list'].hasOwnProperty(i)) {
-                        let favourites = document.getElementById(`wish-${j['wish_list'][1][i]}`)
-                        if (favourites) {
-                            favourites.setAttribute('liked', 'true')
-                            favourites.childNodes.forEach(likes => likes.remove())
-                            favourites.insertAdjacentHTML('beforeend', '<i class="bx bxs-heart"></i>')
-                        }
-                    }
-                }
-        }
-    })()
 
     // Snackbar for Add To Cart Product
     function cart_snackbar(type, product) {

@@ -1,17 +1,26 @@
+import httpx
 from rest_framework import serializers
 from .models import Product, User, Cart, OrderedItem
 
 
 class ProductInfoSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
         fields = [
             'name', 'price', 'image', 'label', 'id'
         ]
 
+    def get_image(self, obj):
+        try:
+            return [x.cdn_url for x in obj.image]
+        except httpx.ConnectError:
+            return ['/assets/img/product/2.jpg'] * 4
+
 
 class OrderedItemSerializer(serializers.ModelSerializer):
-    item = ProductInfoSerializer()
+    item = ProductInfoSerializer(read_only=True)
 
     class Meta:
         model = OrderedItem
@@ -21,6 +30,8 @@ class OrderedItemSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
+    items = OrderedItemSerializer(many=True)
+
     class Meta:
         model = Cart
         fields = [
