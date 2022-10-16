@@ -56,4 +56,4 @@ class UserSerializer(serializers.ModelSerializer):
         return None
 
     def get_wish_list(self, obj):
-        return [obj.wish_list.count(), [product.id for product in obj.wish_list.all()]]
+        return [obj.wish_list.count(), [ProductInfoSerializer(product).data for product in obj.wish_list.all()], sum([product.price for product in obj.wish_list.all()])]

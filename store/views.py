@@ -5,21 +5,12 @@ from django.views import View
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
-from setuptools.command.upload import upload
 
 from store.models import Product, OrderedItem, Cart
 from store.serializer import ProductInfoSerializer, UserSerializer, OrderedItemSerializer
 
 
 # Create your views here.
-
-class HomeView(View):
-    template_name = 'index.html'
-
-    def get(self, request, *args, **kwargs):
-        response = render(request, self.template_name)
-        return response
-
 
 class ProductAPIView(ListAPIView):
     queryset = Product.objects.all().filter(available__lte=1)
@@ -85,3 +76,5 @@ class ProductDetailTemplateView(View):
 class ProductDetailView(RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductInfoSerializer
+
+
