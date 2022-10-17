@@ -19,9 +19,25 @@ Project cloning and dependent package installation:
     cd ChatApp
     pip install -r requirements.txt
     
-Defining all hidden credentials in your .env file. The CLOUDINARY_URL value is available in the dashboard of your cloudinary account.
+Defining all hidden credentials in your .env file. Your uploadcare public and secret key
+ is available in the 
+dashboard of your uploadcare account.
 Creating a local database and running a web server:
+
+    python manage.py migrate --run-syncdb
+    python manage.py runserver
+
+
+Create admin user to login into website and control dashboard
+    python manage.py createsuperuser
     
+
+You can now browse the following [link](http://localhost:8000)
+
+    http://localhost:800/
+
+Add new product to page.
+
 
 # End Points
 
