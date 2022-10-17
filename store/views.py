@@ -6,10 +6,14 @@ from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 
 from store.models import Product, OrderedItem, Cart, User
-from store.serializer import ProductInfoSerializer, UserSerializer, OrderedItemSerializer, Check0utSerializer
-
+from store.serializer import (ProductInfoSerializer, UserSerializer, OrderedItemSerializer,
+                              Check0utSerializer,
+                              ShippingAddressSerializer
+                              )
+from rest_framework.status import HTTP_402_PAYMENT_REQUIRED, HTTP_406_NOT_ACCEPTABLE, HTTP_200_OK
 
 # Create your views here.
+
 
 class ProductAPIView(ListAPIView):
     queryset = Product.objects.all().filter(available__gte=1)  # available items greater than or equal to 1
@@ -85,16 +89,21 @@ class CheckOutView(APIView):
         if request.user.is_authenticated:
             request.data['cart'] = UserSerializer(request.user).data['cart']
         user = request.data['shipping_address']
-        serializer = Check0utSerializer(data=request.data)
-        if serializer.is_valid():
-            consumer, created = User.objects.get_or_create(email=user['email'])
-            cart = Cart.objects.get(consumer=consumer, processing=False)
-            for x in request.data['cart']['items']:
-                product = Product.objects.get(id=x['item']['id'])
-                updated, i = OrderedItem.objects.get_or_create(item=product, consumer=consumer)
-                cart.items.add(updated)
-            cart.processing = True
-            cart.save()
-            return Response({})
+        if request.data.get('payment') == 'confirmed':
+            serializer = Check0utSerializer(data=request.data)
+            if serializer.is_valid():
+                consumer, created = User.objects.get_or_create(email=user['email'])
+                cart = Cart.objects.get(consumer=consumer, processing=False)
+                for x in request.data['cart']['items']:
+                    product = Product.objects.get(id=x['item']['id'])
+                    updated, i = OrderedItem.objects.get_or_create(item=product, consumer=consumer)
+                    cart.items.add(updated)
+                cart.processing = True
+                cart.save()
+                return Response({'success': 'cart processing started'}, status=HTTP_200_OK)
         else:
-            return Response(serializer.errors)
+            serializer = ShippingAddressSerializer(data=user)
+            if serializer.is_valid():
+                return Response({'success': 'proceed to payment'}, status=HTTP_402_PAYMENT_REQUIRED)
+            else:
+                return Response(serializer.errors, status=HTTP_406_NOT_ACCEPTABLE)

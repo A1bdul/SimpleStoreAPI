@@ -37,9 +37,9 @@ class User(AbstractUser):
     Shipping Address for user is saved from checkout process
     """
     wish_list = models.ManyToManyField(Product)
-    city = models.CharField(max_length=20, blank=True, null=True)
+    city = models.CharField(max_length=20)
     mobile_number = models.IntegerField(blank=True, null=True)
-    address = models.CharField(max_length=200, blank=True, null=True)
+    address = models.CharField(max_length=200)
     zip = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
