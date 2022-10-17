@@ -30,7 +30,7 @@ class OrderedItemSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    items = OrderedItemSerializer(many=True)
+    items = OrderedItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Cart
@@ -56,4 +56,18 @@ class UserSerializer(serializers.ModelSerializer):
         return None
 
     def get_wish_list(self, obj):
-        return [obj.wish_list.count(), [ProductInfoSerializer(product).data for product in obj.wish_list.all()], sum([product.price for product in obj.wish_list.all()])]
+        return [obj.wish_list.count(), [ProductInfoSerializer(product).data for product in obj.wish_list.all()],
+                sum([product.price for product in obj.wish_list.all()])]
+
+
+class ShippingAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'first_name', 'last_name', 'address', 'city', 'zip', 'mobile_number', 'email'
+        ]
+
+
+class Check0utSerializer(serializers.Serializer):
+    shipping_address = ShippingAddressSerializer()
+    cart = CartSerializer()
