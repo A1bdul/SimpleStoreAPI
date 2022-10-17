@@ -10,6 +10,19 @@ Simple estore rest api
 
 # Installation
 
+Run the following commands from your shell, 
+Python version>=3.8 should be installed 
+
+Project cloning and dependent package installation:
+
+    git clone https://github.com/A1bdul/ChatApp
+    cd ChatApp
+    pip install -r requirements.txt
+    
+Defining all hidden credentials in your .env file. The CLOUDINARY_URL value is available in the dashboard of your cloudinary account.
+Creating a local database and running a web server:
+    
+
 # End Points
 
 ## api/product 
