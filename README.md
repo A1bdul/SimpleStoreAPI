@@ -1,6 +1,14 @@
 # Simple Store
 
 Simple estore rest api 
+ 
+# Requirements 
+
+    Django, Python
+    Django-rest-framework
+    Uploadcare
+
+# Installation
 
 # End Points
 
