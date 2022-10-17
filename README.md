@@ -15,7 +15,7 @@ Python version>=3.8 should be installed
 
 Project cloning and dependent package installation:
 
-    git clone https://github.com/A1bdul/ChatApp
+    git clone https://github.com/A1bdul/SimpleStore
     cd ChatApp
     pip install -r requirements.txt
     
