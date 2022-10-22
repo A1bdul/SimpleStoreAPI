@@ -58,7 +58,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'StoreProject.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8111'
+    'http://localhost:8011'
 ]
 
 TEMPLATES = [
@@ -140,3 +140,13 @@ UPLOADCARE = {
     'pub_key': str(os.getenv('pub_key')),
     'secret': str(os.getenv('secret')),
 }
+
+EMAIL_BACKEND = 'anymail.backends.mailjet.EmailBackend'
+
+ANYMAIL = {
+    'MAILJET_API_KEY': str(os.getenv('MYAPP_MAILJET_API_KEY')),
+    'MAILJET_SECRET_KEY': str(os.getenv('MYAPP_MAILJET_SECRET_KEY'))
+}
+
+DEFAULT_FROM_EMAIL = str(os.getenv('FROM_EMAIL'))
+

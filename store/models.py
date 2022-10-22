@@ -1,9 +1,23 @@
 import uuid
+
+from django import forms
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
 # Create your models here
+
+class ChoiceArrayField(ArrayField):
+    def formfield(self, **kwargs):
+        defaults = {
+            'form_class': forms.MultipleChoiceField,
+            'choices': self.base_field.choices
+        }
+        defaults.update(kwargs)
+        return super().formfield(**defaults)
+
+
 class Product(models.Model):
     """ Product are the items which are the users primary interest in the website,
      - Product have a unique name, so they are distinguishable from each other
@@ -12,14 +26,16 @@ class Product(models.Model):
         ('NEW', 'N'),
         ('SALE', 'S')
     ]
-
+    choices = (
+        ('Blue', 'b'),
+    )
     name = models.CharField(max_length=200, unique=True)
     from pyuploadcare.dj.models import ImageGroupField
     image = ImageGroupField(blank=True)
     available = models.IntegerField(default=1)
     price = models.FloatField()
     label = models.CharField(max_length=10, choices=LABEL_TYPES, default='SALE')
-
+    # colour = ArrayField(models.CharField(max_length=200,choices=LABEL_TYPES, blank=True), default=list, blank=True)
     # discount = PercentageField(blank=True)
 
     def save(

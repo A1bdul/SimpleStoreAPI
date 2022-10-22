@@ -5,7 +5,7 @@ from .models import Product, User, Cart, OrderedItem
 
 class ProductInfoSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
-
+    name = serializers.CharField()
     class Meta:
         model = Product
         fields = [
