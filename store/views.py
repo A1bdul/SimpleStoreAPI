@@ -4,14 +4,48 @@ from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_402_PAYMENT_REQUIRED, HTTP_406_NOT_ACCEPTABLE, HTTP_200_OK
 from rest_framework.views import APIView
-
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+from pprint import pprint
+import os 
 from store.models import Product, OrderedItem, Cart, User
 from store.serializer import (ProductInfoSerializer, UserSerializer, Check0utSerializer,
-                              ShippingAddressSerializer
-                              )
+                              ShippingAddressSerializer)
+import threading
+from dotenv import load_dotenv
 
-
+load_dotenv()
 # Create your views here.
+
+class EmailThread(threading.Thread):
+    
+    def __init__(self, subject, email,  msg):
+        self.subject = subject
+        self.msg = msg
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        print("sent!!")
+        configuration = sib_api_v3_sdk.Configuration()
+        configuration.api_key['api-key'] = str(os.getenv(SENDINBLUE_API_KEY))
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+        # Define the campaign settings\
+        email_campaigns = sib_api_v3_sdk.SendSmtpEmail(
+        subject= self.subject,
+        sender= { "name": "Israel", "email": self.email},
+        to = [{'email': settings.DEFAULT_TO_EMAIL, "name":"Abdul"}],
+        # Content that will be sent\
+        html_content= self.msg,
+        )
+        # Make the call to the client\
+        try:
+            api_response = api_instance.send_transac_email(email_campaigns)
+            pprint(api_response)
+        except ApiException as e:
+            print("Exception when calling EmailCampaignsApi->create_email_campaign: %s\n" % e)# ------------------
+        # Include the Sendinblue library\
+
 
 
 class ProductAPIView(ListAPIView):
@@ -94,8 +128,7 @@ class CheckOutView(APIView):
             if serializer.is_valid():
                 subject, to, from_ = 'Me to the world', ['a1daromosu@gmail.com'], settings.DEFAULT_FROM_EMAIL
                 message = 'Hello World'
-                msg = EmailMultiAlternatives(subject, message, from_, to)
-                msg.send(fail_silently=False)
+                EmailThread(subject, consumer.email, message).start()
                 return Response({'success': 'proceed to payment'}, status=HTTP_402_PAYMENT_REQUIRED)
             else:
                 return Response(serializer.errors, status=HTTP_406_NOT_ACCEPTABLE)

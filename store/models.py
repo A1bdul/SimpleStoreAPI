@@ -26,8 +26,8 @@ class Product(models.Model):
         ('NEW', 'N'),
         ('SALE', 'S')
     ]
-    choices = (
-        ('Blue', 'b'),
+    category = (
+        ('Accessories', 'accessories'),('Camera', 'camera'), ('Laptop', 'laptop'), ('Audio', 'audio')
     )
     name = models.CharField(max_length=200, unique=True)
     from pyuploadcare.dj.models import ImageGroupField
@@ -35,6 +35,8 @@ class Product(models.Model):
     available = models.IntegerField(default=1)
     price = models.FloatField()
     label = models.CharField(max_length=10, choices=LABEL_TYPES, default='SALE')
+    description = models.TextField()
+    category = models.CharField(choices=category, default='Uncategorized', max_length=200)
     # colour = ArrayField(models.CharField(max_length=200,choices=LABEL_TYPES, blank=True), default=list, blank=True)
     # discount = PercentageField(blank=True)
 

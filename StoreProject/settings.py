@@ -58,7 +58,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'StoreProject.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8011'
+    'http://localhost:8011',
+
 ]
 
 TEMPLATES = [
@@ -126,8 +127,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'assets/'
+STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -148,5 +152,5 @@ ANYMAIL = {
     'MAILJET_SECRET_KEY': str(os.getenv('MYAPP_MAILJET_SECRET_KEY'))
 }
 
-DEFAULT_FROM_EMAIL = str(os.getenv('FROM_EMAIL'))
+DEFAULT_TO_EMAIL = str(os.getenv('TO_EMAIL'))
 
