@@ -33,7 +33,7 @@ sib-api-v3-sdk==7.5.0
 six==1.16.0
 sniffio==1.2.0
 sqlparse==0.4.3
-typing-extensions==3.10.0.2
+typing-extensions
 tzdata==2022.7
 tzlocal==4.2
 uploadcare==0.1.1
