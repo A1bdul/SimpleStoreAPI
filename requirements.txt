@@ -17,6 +17,7 @@ h11
 httpcore
 httpx
 idna
+gunicorn
 immutables
 importlib-resources==5.4.0
 psycopg2
