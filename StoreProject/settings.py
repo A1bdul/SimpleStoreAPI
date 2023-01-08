@@ -59,7 +59,8 @@ ROOT_URLCONF = 'StoreProject.urls'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8011',
-    'http://127.0.0.1:5500'
+    'http://127.0.0.1:5500',
+    'https://cs-electronics.up.railway.app'
 
 ]
 
