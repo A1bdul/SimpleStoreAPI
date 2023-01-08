@@ -1,10 +1,10 @@
 import uuid
-
+from django.contrib import admin
 from django import forms
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from django.utils.html import format_html
 
 # Create your models here
 
@@ -27,7 +27,7 @@ class Product(models.Model):
         ('SALE', 'S')
     ]
     category = (
-        ('Accessories', 'accessories'),('Camera', 'camera'), ('Laptop', 'laptop'), ('Audio', 'audio')
+        ('Accessories', 'accessories'),('Camera', 'camera'), ('Laptop', 'laptop'), ('Audio', 'audio'),('uncategorized','Uncategorized' )
     )
     name = models.CharField(max_length=200, unique=True)
     from pyuploadcare.dj.models import ImageGroupField
@@ -36,7 +36,7 @@ class Product(models.Model):
     price = models.FloatField()
     label = models.CharField(max_length=10, choices=LABEL_TYPES, default='SALE')
     description = models.TextField()
-    category = models.CharField(choices=category, default='Uncategorized', max_length=200)
+    category = models.CharField(choices=category, default='uncategorized', max_length=200)
     # colour = ArrayField(models.CharField(max_length=200,choices=LABEL_TYPES, blank=True), default=list, blank=True)
     # discount = PercentageField(blank=True)
 
@@ -45,6 +45,19 @@ class Product(models.Model):
     ):
         self.name = self.name.title()
         super().save()
+
+    @admin.display(description="")
+    def image_display(self):
+        if not self.image:
+            display_image = '/static/thumbnail.jpg'
+        else:
+            display_image = self.image[0].cdn_url
+        return format_html(
+            '<img src="{}" width="30">', display_image
+            )
+    @admin.display(description="Price")
+    def price_display(self):
+        return '$' +str(self.price)
 
     def __str__(self):
         return self.name
