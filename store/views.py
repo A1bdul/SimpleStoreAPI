@@ -13,7 +13,7 @@ from store.serializer import (ProductInfoSerializer, UserSerializer, Check0utSer
                               ShippingAddressSerializer)
 import threading
 from dotenv import load_dotenv
-
+from django.db.models import Q
 load_dotenv()
 # Create your views here.
 
@@ -56,7 +56,7 @@ class ProductAPIView(ListAPIView):
         # get search input from request
         search = request.data.get('s')
         # filter queryset for matching products to search
-        self.queryset = Product.objects.all().filter(name__icontains=search, )
+        self.queryset = Product.objects.all().filter(Q(name__icontains=search) | Q(category__icontains=search))
         data = {}
         n = 0
         for query in self.queryset:

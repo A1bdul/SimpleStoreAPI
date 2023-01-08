@@ -27,7 +27,7 @@ class Product(models.Model):
         ('SALE', 'S')
     ]
     category = (
-        ('Accessories', 'accessories'),('Camera', 'camera'), ('Laptop', 'laptop'), ('Audio', 'audio'),('uncategorized','Uncategorized' )
+        ('Accessories', 'accessories'),('Camera & Photos', 'camera & photos'), ('Computer & Laptop', 'computer & laptop'), ('TV & Audio', 'tv & audio'),('uncategorized','Uncategorized' )
     )
     name = models.CharField(max_length=200, unique=True)
     from pyuploadcare.dj.models import ImageGroupField
