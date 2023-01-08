@@ -158,4 +158,3 @@ ANYMAIL = {
 }
 
 DEFAULT_TO_EMAIL = str(os.getenv('TO_EMAIL'))
-
