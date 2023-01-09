@@ -130,11 +130,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = 'static/'
 
 CSRF_TRUSTED_ORIGINS = ['https://simplestoreapi-production.up.railway.app','https://*.127.0.0.1']
 
