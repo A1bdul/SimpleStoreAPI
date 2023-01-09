@@ -23,11 +23,13 @@ class Product(models.Model):
      - Product have a unique name, so they are distinguishable from each other
      """
     LABEL_TYPES = [
-        ('NEW', 'N'),
-        ('SALE', 'S')
+        ('NEW', 'New'),
+        ('SALE', 'Sale'),
+        ('FEATURED', 'Featured'),
+
     ]
     category = (
-        ('Accessories', 'Accessories'),('Camera & Photos', 'Camera & hotos'), ('Computer & Laptop', 'Computer & Laptop'), ('TV & Audio', 'Tv & Audio'),('Uncategorized','Uncategorized' ),
+        ('Accessories', 'Accessories'),('Camera & Photos', 'Camera & hotos'), ('Computer & Laptop', 'Computer & Laptop'), ('TV & Audio', 'Tv & Audio'),
 ('Electronic & Housewares', 'Electronic & Housewares'), ('Smartphone & Tablet', 'Smartphone & Tablet'), ('Games & Accessories', 'Games & Accessories')
     )
     name = models.CharField(max_length=200, unique=True)
@@ -37,7 +39,7 @@ class Product(models.Model):
     price = models.FloatField()
     label = models.CharField(max_length=10, choices=LABEL_TYPES, default='SALE')
     description = models.TextField()
-    category = models.CharField(choices=category, default='uncategorized', max_length=200)
+    category = models.CharField(choices=category, max_length=200, blank=True)
     # colour = ArrayField(models.CharField(max_length=200,choices=LABEL_TYPES, blank=True), default=list, blank=True)
     # discount = PercentageField(blank=True)
 
