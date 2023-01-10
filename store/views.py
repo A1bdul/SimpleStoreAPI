@@ -55,9 +55,10 @@ class ProductAPIView(ListAPIView):
     def post(self, request):
         # get search input from request
         search = request.data.get('s')
-        
+        range = request.data.get('range')
+        print(range, search)
         # filter queryset for matching products to search
-        self.queryset = Product.objects.all().filter(Q(name__icontains=search) | Q(category__icontains=search.replace('&amp;', '&')))
+        self.queryset = Product.objects.all().filter(Q(Q(category__icontains=search.replace('&amp;', '&')) & Q(price__range=(range[1], range[0]))) | Q(name__icontains=search))
         data = {}
         n = 0
         for query in self.queryset:
