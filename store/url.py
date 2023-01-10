@@ -8,4 +8,5 @@ urlpatterns = [
     path('api/cart', views.CartAPIView.as_view(), name='cart'),
     path('api/checkout-point', views.CheckOutView.as_view(), name='checkout'),
     path('product-detail/<int:pk>', views.ProductDetailView.as_view()),
+    path('mail/newsletter', views.NewsletterAPIView.as_view(), name="newsletter")
    ]

@@ -134,3 +134,13 @@ class CheckOutView(APIView):
                 return Response({'success': 'proceed to payment'}, status=HTTP_402_PAYMENT_REQUIRED)
             else:
                 return Response(serializer.errors, status=HTTP_406_NOT_ACCEPTABLE)
+
+
+class NewsletterAPIView(APIView):
+    def post(self, request):
+        subject = 'Me to the World'
+        email = request.data.get('email')
+        msg = 'YOur email is Successfully added to Our Newsletter'
+        EmailThread(subject, email, msg).start()
+        Newsletter.objects.create(email=email)
+        return Response("Email succesfully added to neswletter")

@@ -48,6 +48,12 @@ class Product(models.Model):
     ):
         self.name = self.name.title()
         super().save()
+        # for mail in Newsletter.objects.all():
+        #     email = mail.email
+        #     subject = 'Newsletter Subscription'
+        #     msg = f'{self.name} was added to shop, Buy Now !!!'
+        #     EmailThread(subject, email, msg)
+
 
     @admin.display(description="")
     def image_display(self):
@@ -103,3 +109,7 @@ class Cart(models.Model):
 
     def quantity_total(self):
         return self.items.count()
+
+
+class Newsletter(models.Model):
+    email = models.CharField(max_length=200)
