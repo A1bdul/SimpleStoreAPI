@@ -98,11 +98,11 @@ WSGI_APPLICATION = 'StoreProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'Abduls', 
-        'USER': 'Abdul',
-        'PASSWORD': '123Abdul456',
-        'HOST': 'postgresql-104455-0.cloudclusters.net', 
-        'PORT': '10187',
+        'NAME': str(os.getenv("DB_NAME")),
+        'USER': str(os.getenv("DB_USER")),
+        'PASSWORD': str(os.getenv("DB_PASSWORD")),
+        'HOST': str(os.getenv("DB_HOST")),
+        'PORT': str(os.getenv("DB_PORT")),
     }
 }
 
