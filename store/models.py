@@ -29,7 +29,7 @@ class Product(models.Model):
 
     ]
     category = (
-        ('Accessories', 'Accessories'),('Camera & Photos', 'Camera & hotos'), ('Computer & Laptop', 'Computer & Laptop'), ('TV & Audio', 'Tv & Audio'),
+        ('Accessories', 'Accessories'),('Camera & Photos', 'Camera & Photos'), ('Computer & Laptop', 'Computer & Laptop'), ('TV & Audio', 'Tv & Audio'),
 ('Electronic & Housewares', 'Electronic & Housewares'), ('Smartphone & Tablet', 'Smartphone & Tablet'), ('Games & Console', 'Games & Console')
     )
     name = models.CharField(max_length=200, unique=True)
@@ -37,7 +37,8 @@ class Product(models.Model):
     image = ImageGroupField(blank=True)
     available = models.IntegerField(default=1)
     price = models.FloatField()
-    label = models.CharField(max_length=10, choices=LABEL_TYPES, default='SALE')
+    label = models.CharField(max_length=10, choices=LABEL_TYPES, 
+                            blank=True)
     description = models.TextField()
     category = models.CharField(choices=category, max_length=200, blank=True)
     # colour = ArrayField(models.CharField(max_length=200,choices=LABEL_TYPES, blank=True), default=list, blank=True)
@@ -71,20 +72,28 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-
-class User(AbstractUser):
-    """ Django's default user model is extended for this wish list option for active user,
-    Shipping Address for user is saved from checkout process
-    """
-    wish_list = models.ManyToManyField(Product)
+    
+class ShippingAddress(models.Model):
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
     city = models.CharField(max_length=20)
     mobile_number = models.IntegerField(blank=True, null=True)
     address = models.CharField(max_length=200)
     zip = models.IntegerField(blank=True, null=True)
 
+
+class User(AbstractUser):
+    """ Django's default user model is extended for this wish list option for active user,
+    Shipping Address for user is saved from checkout process
+    """
+    firstname = models.CharField(max_length=100, blank=True)
+    lastname = models.CharField(max_length=100, blank=True)
+    email = models.CharField(max_length=200)
+    wish_list = models.ManyToManyField(Product)
+    ship_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
+    
     def __str__(self):
         return self.email
-
 
 class OrderedItem(models.Model):
     item = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='ordered_item')
@@ -99,10 +108,12 @@ class Cart(models.Model):
     items = models.ManyToManyField(OrderedItem, blank=True)
     transaction_id = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4)
     completed = models.BooleanField(default=False)
-    date_ordered = models.DateTimeField(blank=True, null=True)
+    date_ordered = models.DateTimeField(auto_now_add=True)
     processing = models.BooleanField(default=False)
     consumer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-
+    notes = models.TextField(blank=True)
+    shipping_to = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
+    
     def cart_total(self):
         total = sum([price.ordered_item_total() for price in self.items.all()])
         return total
@@ -112,4 +123,7 @@ class Cart(models.Model):
 
 
 class Newsletter(models.Model):
-    email = models.CharField(max_length=200)
+    email = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.email

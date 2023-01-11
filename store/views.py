@@ -8,9 +8,9 @@ import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 from pprint import pprint
 import os 
-from store.models import Product, OrderedItem, Cart, User
-from store.serializer import (ProductInfoSerializer, UserSerializer, Check0utSerializer,
-                              ShippingAddressSerializer)
+from store.models import Product, OrderedItem, Cart, User, Newsletter
+from store.serializer import (ProductInfoSerializer, UserSerializer,
+                ShippingAddressSerializer)
 import threading
 from dotenv import load_dotenv
 from django.db.models import Q
@@ -28,7 +28,7 @@ class EmailThread(threading.Thread):
     def run(self):
         print("sent!!")
         configuration = sib_api_v3_sdk.Configuration()
-        configuration.api_key['api-key'] = str(os.getenv(SENDINBLUE_API_KEY))
+        configuration.api_key['api-key'] = str(os.getenv('SENDINBLUE_API_KEY'))
         api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
         # Define the campaign settings\
         email_campaigns = sib_api_v3_sdk.SendSmtpEmail(
@@ -109,30 +109,58 @@ class ProductDetailView(RetrieveAPIView):
 
 
 class CheckOutView(APIView):
+    """
+        data =  
+        { 
+            shipping_address: {
+                firstname: firstname,
+                lastname: lastname,
+                email: email,
+                mobile_number: mobile_number,
+                zip: zip,
+                city: city,
+                country: country,
+                state:state,
+                address: address
+            },
+            cart: {
+                products:[{
+                            "name": "Laced Jacket With Strips",
+                            "id": 2,
+                            "quantity": 3
+                        },{
+                            "name": "Baggy Jacket With Pockets",
+                            "id": 1,
+                            "quantity": 1
+                        }]
+                }
+            }
+    """
     def post(self, request):
         if request.user.is_authenticated:
+            # get authenticated user's cart from database
             request.data['cart'] = UserSerializer(request.user).data['cart']
         user = request.data['shipping_address']
         if request.data.get('payment') == 'confirmed':
-            serializer = Check0utSerializer(data=request.data)
-            if serializer.is_valid():
-                consumer, created = User.objects.get_or_create(email=user['email'])
-                cart = Cart.objects.get(consumer=consumer, processing=False)
-                for x in request.data['cart']['items']:
-                    product = Product.objects.get(id=x['item']['id'])
-                    updated, i = OrderedItem.objects.get_or_create(item=product, consumer=consumer)
-                    cart.items.add(updated)
-                cart.processing = True
-                cart.save()
-                return Response({'success': 'cart processing started'}, status=HTTP_200_OK)
+            consumer, created = User.objects.get_or_create(email=user['email'])
+            cart = Cart.objects.get(consumer=consumer, processing=False)
+            for x in request.data['cart']['items']:
+                product = Product.objects.get(id=x['id'])
+                updated, i = OrderedItem.objects.get_or_create(item=product, consumer=consumer, quantity=x['quantity'])
+                cart.items.add(updated)
+            cart.processing = True
+            cart.save()
+            subject, to, from_ = 'Me to the world', ['a1daromosu@gmail.com'], settings.DEFAULT_FROM_EMAIL
+            message = 'Hello World'
+            EmailThread(subject, consumer.email, message).start()
+            return Response({'success': 'cart processing started'}, status=HTTP_200_OK)
         else:
             serializer = ShippingAddressSerializer(data=user)
             if serializer.is_valid():
-                subject, to, from_ = 'Me to the world', ['a1daromosu@gmail.com'], settings.DEFAULT_FROM_EMAIL
-                message = 'Hello World'
-                EmailThread(subject, consumer.email, message).start()
+                serializer.save()
                 return Response({'success': 'proceed to payment'}, status=HTTP_402_PAYMENT_REQUIRED)
             else:
+                print(serializer.errors)
                 return Response(serializer.errors, status=HTTP_406_NOT_ACCEPTABLE)
 
 
@@ -144,3 +172,5 @@ class NewsletterAPIView(APIView):
         EmailThread(subject, email, msg).start()
         Newsletter.objects.create(email=email)
         return Response("Email succesfully added to neswletter")
+    
+    

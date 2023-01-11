@@ -1,6 +1,6 @@
 import httpx
 from rest_framework import serializers
-from .models import Product, User, Cart, OrderedItem
+from .models import Product, User, Cart, OrderedItem, ShippingAddress
 
 
 class ProductInfoSerializer(serializers.ModelSerializer):
@@ -22,22 +22,27 @@ class ProductInfoSerializer(serializers.ModelSerializer):
 class OrderedItemSerializer(serializers.ModelSerializer):
     item = ProductInfoSerializer(read_only=True)
 
-    class Meta:
-        model = OrderedItem
-        fields = [
-            'item', 'quantity'
-        ]
-
 
 class CartSerializer(serializers.ModelSerializer):
-    items = OrderedItemSerializer(many=True, read_only=True)
+    products = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
         fields = [
-            'items', 'cart_total', 'quantity_total'
+            'products', 'cart_total', 'quantity_total'
         ]
 
+    def get_products(self, obj):
+        print(obj.items)
+        data = []
+        for x in obj.items.all():
+            i = ProductInfoSerializer(x.item).data
+            i['quantity'] = x.quantity
+            data.append(i)
+        return data
+            
+            
+        
 
 class UserSerializer(serializers.ModelSerializer):
     cart = serializers.SerializerMethodField()
@@ -50,7 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
     def get_cart(self, obj):
-        carts = Cart.objects.get(consumer=obj)
+        carts, created = Cart.objects.get_or_create(consumer=obj, processing=False)
         if carts is not None:
             return CartSerializer(carts).data
         return None
@@ -62,12 +67,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ShippingAddressSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = ShippingAddress
         fields = [
-            'first_name', 'last_name', 'address', 'city', 'zip', 'mobile_number', 'email'
+            'address', 'city', 'zip', 'mobile_number',
         ]
-
-
-class Check0utSerializer(serializers.Serializer):
-    shipping_address = ShippingAddressSerializer()
-    cart = CartSerializer()
