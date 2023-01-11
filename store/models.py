@@ -86,11 +86,11 @@ class User(AbstractUser):
     """ Django's default user model is extended for this wish list option for active user,
     Shipping Address for user is saved from checkout process
     """
-    firstname = models.CharField(max_length=100, blank=True)
-    lastname = models.CharField(max_length=100, blank=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
     email = models.CharField(max_length=200)
     wish_list = models.ManyToManyField(Product)
-    ship_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
+    address_to = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
     
     def __str__(self):
         return self.email
